@@ -1,0 +1,52 @@
+﻿@page "/user"
+@using Molit_IN.Client.Components.User
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
+
+@if (userRole == "1")
+{
+    <h3>Usuarios</h3>
+    @* <div class="container-fluid">
+        <div class="row gy-3">
+            <!-- Columna para el formulario: en pantallas pequeñas ocupa 12 columnas, en md ocupa 4 -->
+            <div class="col-12 col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <FormUser />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna para la lista: en pantallas pequeñas ocupa 12 columnas, en md ocupa 8 -->
+            <div class="col-12 col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <ListUser />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> *@
+}
+else
+{
+    <h3>Acceso no autorizado!</h3>
+}
+
+@code {
+    string userRole;
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!user.Identity.IsAuthenticated)
+        {
+            // Redirige al login si no está autenticado
+            Navigation.NavigateTo("/");
+        }
+        userRole = user.FindFirst("RoleId")?.Value ?? user.Identity.Name;
+        Console.WriteLine("userRole: " + userRole);
+    }
+}

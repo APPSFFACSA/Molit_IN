@@ -1,0 +1,20 @@
+@"
+# IDE
+.vs/
+.vscode/
+*.user
+*.suo
+*.csproj.user
+*.slnLaunch.user
+
+# Build
+bin/
+obj/
+**/bin/**
+**/obj/**
+
+# Otros
+node_modules/
+*.log
+appsettings.Development.json
+"@ | Set-Content -Encoding UTF8 .gitignore

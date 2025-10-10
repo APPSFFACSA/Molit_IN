@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Molit_IN.Client</title>
+    <base href="/" />
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Blazor.Bootstrap CSS -->
+    <link href="_content/Blazor.Bootstrap/blazor.bootstrap.css" rel="stylesheet">
+
+    <!-- Font Awesome 6 (para clases fa-...) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" />
+
+    <!-- Bootstrap Icons (para clases bi bi-...) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+
+    <!-- SweetAlert2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+
+  
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link href="Molit_IN.Client.styles.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div id="app">
+        <svg class="loading-progress">
+            <circle r="40%" cx="50%" cy="50%"></circle>
+            <circle r="40%" cx="50%" cy="50%"></circle>
+        </svg>
+        <div class="loading-progress-text"></div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
+    </div>
+
+    <!-- Bootstrap 5 JS (bundle con Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Blazor.Bootstrap JS -->
+    <script src="_content/Blazor.Bootstrap/blazor.bootstrap.js"></script>
+
+    <!-- Blazor runtime -->
+    <script src="_framework/blazor.webassembly.js"></script>
+
+    <!-- SweetAlert2 JS (usa solo uno: wrapper o CDN) -->
+    <script src="_content/CurrieTechnologies.Razor.SweetAlert2/sweetalert2.min.js"></script>
+    <!-- Si prefieres CDN en lugar del wrapper, comenta la línea anterior y descomenta esta:
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    -->
+</body>
+</html>

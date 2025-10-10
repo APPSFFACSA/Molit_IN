@@ -1,0 +1,6 @@
+@Molit_IN.API_HostAddress = http://localhost:5017
+
+GET {{Molit_IN.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

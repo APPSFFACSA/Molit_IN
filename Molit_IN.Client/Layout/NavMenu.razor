@@ -1,0 +1,265 @@
+﻿@using System.Security.Claims
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
+
+<div class="@SidebarCssClass">
+    <!-- TOP BAR dentro del sidebar -->
+    <div class="sidebar-top ps-3 navbar navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="home">
+                <span class="fas fa-truck-fast"></span>&nbsp; MOLIT IN
+            </a>
+
+            <div class="d-flex align-items-center gap-2">
+                <!-- Colapsar/expandir (solo íconos) -->
+                <button class="btn btn-sm btn-outline-light"
+                        title="Colapsar/Expandir menú"
+                        @onclick="ToggleCompactMenu">
+                    <span class="@CompactIconClass" aria-hidden="true"></span>
+                </button>
+
+                <!-- Toggler móvil (si lo usas) -->
+                <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENIDO SCROLLEABLE del sidebar -->
+    <div class="nav-scrollable">
+        <nav class="flex-column">
+
+            <div class="nav-item px-3 sidebar-userblock">
+                <span class="text-white d-block">Bienvenido:</span>
+                <label class="text-white-50">@userName</label>
+            </div>
+
+            <!-- INICIO -->
+            <div class="nav-item px-3">
+                <NavLink class="nav-link d-flex align-items-center" href="home" Match="NavLinkMatch.All" title="Inicio">
+                    <span class="bi bi-house-door-fill-nav-menu me-2" aria-hidden="true"></span>
+                    <span class="label">Inicio</span>
+                </NavLink>
+            </div>
+
+            <!-- ADMINISTRACIÓN -->
+            @if (userRole == "1" || userRole == "3")
+            {
+                <div class="nav-item px-3 menu-group">
+                    <a role="button"
+                       class="nav-link d-flex align-items-center justify-content-between"
+                       @onclick="() => ToggleSection(nameof(expandSubNavCat))"
+                       title="Administración">
+                        <div class="d-flex align-items-center">
+                            <span class="fas fa-cogs text-warning" aria-hidden="true"></span>
+                            <span class="label ms-2">Administración</span>
+                        </div>
+                        <span class="fas @(expandSubNavCat ? "fa-angle-up" : "fa-angle-down") caret"></span>
+                    </a>
+
+                    @if (expandSubNavCat)
+                    {
+                        <div class="nav flex-column submenu">
+                            @if (userRole == "1")
+                            {
+                                <div class="nav-item px-3">
+                                    <NavLink class="nav-link d-flex align-items-center" href="user" title="Usuarios">
+                                        <span class="fas fa-user" aria-hidden="true"></span>
+                                        <span class="label ms-2">Usuarios</span>
+                                    </NavLink>
+                                </div>
+                                <div class="nav-item px-3">
+                                    <NavLink class="nav-link d-flex align-items-center" href="rol" title="Rol">
+                                        <span class="fas fa-shield" aria-hidden="true"></span>
+                                        <span class="label ms-2">Rol</span>
+                                    </NavLink>
+                                </div>
+                                <div class="nav-item px-3">
+                                    <NavLink class="nav-link d-flex align-items-center" href="menu" title="Menú">
+                                        <span class="fas fa-list-alt" aria-hidden="true"></span>
+                                        <span class="label ms-2">Menú</span>
+                                    </NavLink>
+                                </div>
+                                <div class="nav-item px-3">
+                                    <NavLink class="nav-link d-flex align-items-center" href="rolmenu" title="Asignación Menú">
+                                        <span class="fas fa-list-alt" aria-hidden="true"></span>
+                                        <span class="label ms-2">Asignación Menú</span>
+                                    </NavLink>
+                                </div>
+                            }
+                            @if (userRole == "1" || userRole == "3")
+                            {
+                                <div class="nav-item px-3">
+                                    <NavLink class="nav-link d-flex align-items-center" href="vehicletype" title="Tipos Vehículo">
+                                        <span class="fas fa-truck" aria-hidden="true"></span>
+                                        <span class="label ms-2">Tipos Vehículo</span>
+                                    </NavLink>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- TIENDAS -->
+            @if (userRole == "1" || userRole == "2")
+            {
+                <div class="nav-item px-3 menu-group">
+                    <a role="button"
+                       class="nav-link d-flex align-items-center justify-content-between"
+                       @onclick="() => ToggleSection(nameof(expandSubNavPro))"
+                       title="Tiendas">
+                        <div class="d-flex align-items-center">
+                            <span class="fas fa-address-card text-warning" aria-hidden="true"></span>
+                            <span class="label ms-2">Tiendas</span>
+                        </div>
+                        <span class="fas @(expandSubNavPro ? "fa-angle-up" : "fa-angle-down") caret"></span>
+                    </a>
+
+                    @if (expandSubNavPro)
+                    {
+                        <div class="nav flex-column submenu">
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link d-flex align-items-center" href="supplier" title="Perfil">
+                                    <span class="fas fa-user" aria-hidden="true"></span>
+                                    <span class="label ms-2">Perfil</span>
+                                </NavLink>
+                            </div>
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link d-flex align-items-center" href="pilot" title="Pilotos">
+                                    <span class="fas fa-users" aria-hidden="true"></span>
+                                    <span class="label ms-2">Pilotos</span>
+                                </NavLink>
+                            </div>
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link d-flex align-items-center" href="auxiliar" title="Auxiliares">
+                                    <span class="fas fa-users" aria-hidden="true"></span>
+                                    <span class="label ms-2">Auxiliares</span>
+                                </NavLink>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- LIQUIDACIÓN -->
+            @if (userRole == "1" || userRole == "2")
+            {
+                <div class="nav-item px-3 menu-group">
+                    <a role="button"
+                       class="nav-link d-flex align-items-center justify-content-between"
+                       @onclick="() => ToggleSection(nameof(expandSubNavLiquida))"
+                       title="Liquidación">
+                        <div class="d-flex align-items-center">
+                            <span class="fas fa-check-square text-warning" aria-hidden="true"></span>
+                            <span class="label ms-2">Liquidación</span>
+                        </div>
+                        <span class="fas @(expandSubNavLiquida ? "fa-angle-up" : "fa-angle-down") caret"></span>
+                    </a>
+
+                    @if (expandSubNavLiquida)
+                    {
+                        <div class="nav flex-column submenu">
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link d-flex align-items-center" href="settlement" title="Liquidación">
+                                    <span class="fas fa-list-alt" aria-hidden="true"></span>
+                                    <span class="label ms-2">Liquidación</span>
+                                </NavLink>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- AUTORIZACIONES -->
+            @if (userRole == "1" || userRole == "3" || userRole == "4")
+            {
+                <div class="nav-item px-3 menu-group">
+                    <a role="button"
+                       class="nav-link d-flex align-items-center justify-content-between"
+                       @onclick="() => ToggleSection(nameof(expandSubNavauto))"
+                       title="Autorizaciones">
+                        <div class="d-flex align-items-center">
+                            <span class="fas fa-question-circle text-warning" aria-hidden="true"></span>
+                            <span class="label ms-2">Autorizaciones</span>
+                        </div>
+                        <span class="fas @(expandSubNavauto ? "fa-angle-up" : "fa-angle-down") caret"></span>
+                    </a>
+
+                    @if (expandSubNavauto)
+                    {
+                        <div class="nav flex-column submenu">
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link d-flex align-items-center" href="authorization" title="Autorizar">
+                                    <span class="fas fa-handshake" aria-hidden="true"></span>
+                                    <span class="label ms-2">Autorizar</span>
+                                </NavLink>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+
+        </nav>
+    </div>
+</div>
+
+@code {
+    private bool collapseNavMenu = false; // móvil
+    private bool isCompact = false;       // colapsado (solo íconos)
+
+    private bool expandSubNavPro;
+    private bool expandSubNavLiquida;
+    private bool expandSubNavauto;
+    private bool expandSubNavCat;
+
+    public string userName;
+    public string userRole;
+
+    private string SidebarCssClass =>
+    $"sidebar {(collapseNavMenu ? "collapse" : "")} {(isCompact ? "compact" : "")}".Trim();
+
+
+    private string CompactIconClass => isCompact ? "fas fa-angles-right" : "fas fa-angles-left";
+
+    private void ToggleNavMenu() => collapseNavMenu = !collapseNavMenu;
+    private void ToggleCompactMenu() => isCompact = !isCompact;
+
+    private bool AnyExpanded => expandSubNavCat || expandSubNavPro || expandSubNavLiquida || expandSubNavauto;
+
+
+    private void ToggleSection(string sectionName)
+    {
+        switch (sectionName)
+        {
+            case nameof(expandSubNavCat):
+                expandSubNavCat = !expandSubNavCat;
+                if (expandSubNavCat) { expandSubNavPro = expandSubNavLiquida = expandSubNavauto = false; }
+                break;
+            case nameof(expandSubNavPro):
+                expandSubNavPro = !expandSubNavPro;
+                if (expandSubNavPro) { expandSubNavCat = expandSubNavLiquida = expandSubNavauto = false; }
+                break;
+            case nameof(expandSubNavLiquida):
+                expandSubNavLiquida = !expandSubNavLiquida;
+                if (expandSubNavLiquida) { expandSubNavCat = expandSubNavPro = expandSubNavauto = false; }
+                break;
+            case nameof(expandSubNavauto):
+                expandSubNavauto = !expandSubNavauto;
+                if (expandSubNavauto) { expandSubNavCat = expandSubNavPro = expandSubNavLiquida = false; }
+                break;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!user.Identity.IsAuthenticated) Navigation.NavigateTo("/");
+
+        userName = user.FindFirst("FullName")?.Value ?? user.Identity.Name;
+        userRole = user.FindFirst("RoleId")?.Value ?? user.Identity.Name;
+    }
+}

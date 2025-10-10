@@ -1,0 +1,38 @@
+﻿@using Molit_IN.Client.Provider
+@inherits LayoutComponentBase
+@inject NavigationManager navigationManager
+@inject IJSRuntime JS
+@inject AuthenticationStateProvider AuthStateProvider
+
+<div class="page">
+    <!-- Importante: quitar el div.sidebar exterior -->
+    <NavMenu />
+
+    <main>
+        <div class="top-row px-4">
+            <Button @onclick="@(() => LogoutAsync())" Color="ButtonColor.Danger" Size="ButtonSize.Small">
+                <Icon Name="IconName.DoorClosed" />
+            </Button>
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+
+    <Modal IsServiceModal="true" />
+</div>
+
+@code {
+    private async Task LogoutAsync()
+    {
+        await JS.InvokeVoidAsync("localStorage.removeItem", "authToken");
+
+        if (AuthStateProvider is Authentication customAuth)
+        {
+            await customAuth.CerrarSesion();
+        }
+
+        navigationManager.NavigateTo("/", true);
+    }
+}
