@@ -9,10 +9,12 @@ namespace Molit_IN.Client.Services
         public List<UserListCLS> lista;
         private readonly HttpClient _httpClient;
         private readonly TokenService _tokenService;
-        public event Func<Task> OnChange;
-        public event Func<int, Task> OnEdit;
-        public event Func<UserListCLS, Task> OnSearch;
-        public event Func<string, Task> OnSerach2;
+
+        // Event bus
+        public event Func<Task>? OnChange;
+        public event Func<int, Task>? OnEdit;
+        public event Func<UserListCLS, Task>? OnSearch;
+        public event Func<string, Task>? OnSerach2;
 
         public UserServices(HttpClient httpClient, TokenService tokenService)
         {
@@ -20,7 +22,7 @@ namespace Molit_IN.Client.Services
             lista = new List<UserListCLS>();
             _tokenService = tokenService;
         }
-        // Este método garantiza que _httpClient tenga siempre el Bearer antes de la petición.
+
         private async Task EnsureAuthorizationAsync()
         {
             var token = await _tokenService.GetTokenAsync();
@@ -31,37 +33,27 @@ namespace Molit_IN.Client.Services
             }
         }
 
-
         public async Task<List<UserListCLS>> listarUsuario()
         {
             await EnsureAuthorizationAsync();
             var response = await _httpClient.GetFromJsonAsync<List<UserListCLS>>("api/User");
-            if (response != null)
-            {
-                return response;
-            }
-            return lista;
+            return response ?? lista;
         }
 
-        public async Task<List<UserListCLS>> buscarUsuario(string oUsuarioListCLS)
+        public async Task<List<UserListCLS>> buscarUsuario(string texto)
         {
             var lista = await listarUsuario();
-            lista = lista.Where(p =>
-                    (string.IsNullOrEmpty(oUsuarioListCLS) ||
-                     p.UserName.ToUpper().Contains(oUsuarioListCLS.ToUpper()))
-            ).ToList();
-            return lista;
+            if (string.IsNullOrWhiteSpace(texto)) return lista;
+
+            var term = texto.ToUpperInvariant();
+            return lista.Where(p => (p?.UserName ?? string.Empty).ToUpperInvariant().Contains(term)).ToList();
         }
 
         public async Task<UserFormAddCLS> recuperarUsuario(int idusuario)
         {
             await EnsureAuthorizationAsync();
             var response = await _httpClient.GetFromJsonAsync<UserFormAddCLS>("api/User/" + idusuario);
-            if (response != null)
-            {
-                return response;
-            }
-            return new UserFormAddCLS();
+            return response ?? new UserFormAddCLS();
         }
 
         public async Task<bool> agregar(UserFormAddCLS oUsuarioFormAddCLS)
@@ -74,7 +66,6 @@ namespace Molit_IN.Client.Services
                 return true;
             }
             return false;
-
         }
 
         public async Task<bool> eliminar(int idusuario)
@@ -89,27 +80,43 @@ namespace Molit_IN.Client.Services
             return false;
         }
 
-
-        public void notificarCambios()
+        public async Task<bool> actualizar(UserFormAddCLS u)
         {
-            OnChange?.Invoke();
+            if (u is null || u.IdUser <= 0) return false;
+
+            await EnsureAuthorizationAsync();
+            var resp = await _httpClient.PutAsJsonAsync($"api/User/{u.IdUser}", u);
+            if (resp.IsSuccessStatusCode)
+            {
+                notificarCambios();
+                return true;
+            }
+            return false;
         }
 
-        public void notificarEdit(int idcarrera)
+        // ==== Notificaciones de eventos (fire-and-forget para no bloquear UI) ====
+        public void notificarCambios()
         {
-            OnEdit?.Invoke(idcarrera);
+            var handler = OnChange;
+            if (handler is not null) _ = handler.Invoke();
+        }
+
+        public void notificarEdit(int idUsuario)
+        {
+            var handler = OnEdit;
+            if (handler is not null) _ = handler.Invoke(idUsuario);
         }
 
         public void notificarSearch(UserListCLS oUsuarioListCLS)
         {
-            OnSearch?.Invoke(oUsuarioListCLS);
+            var handler = OnSearch;
+            if (handler is not null) _ = handler.Invoke(oUsuarioListCLS);
         }
 
         public void notificarSearch2(string nombreusuario)
         {
-            OnSerach2?.Invoke(nombreusuario);
-
+            var handler = OnSerach2;
+            if (handler is not null) _ = handler.Invoke(nombreusuario);
         }
-
     }
 }

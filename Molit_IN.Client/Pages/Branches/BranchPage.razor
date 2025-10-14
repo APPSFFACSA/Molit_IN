@@ -1,0 +1,61 @@
+﻿@page "/branches"
+@using Molit_IN.Client.Components.Branches
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
+
+<div class="d-flex align-items-center gap-2 mb-3">
+    <h3 class="mb-0">Perfil de Tienda</h3>
+</div>
+
+@if (userRole == "1" || userRole == "2")
+{
+    @* Aviso: usuario sin tienda asignada *@
+    @if (string.IsNullOrWhiteSpace(BranchCode) || BranchCode == "0")
+    {
+        <div class="alert alert-warning d-flex align-items-start gap-3" role="alert">
+            <div class="fs-4" aria-hidden="true">⚠️</div>
+            <div>
+                <h6 class="alert-heading mb-1">Sin tienda asignada</h6>
+                <p class="mb-0">No tienes una tienda asignada. Verifica con el administrador o actualiza tu perfil.</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        <StoreProfile BranchCode="@BranchCode" />
+    }
+}
+else
+{
+    @* Aviso: acceso no autorizado *@
+    <div class="alert alert-danger d-flex align-items-start gap-3" role="alert">
+        <div class="fs-4" aria-hidden="true">⛔</div>
+        <div>
+            <h6 class="alert-heading mb-1">Acceso no autorizado</h6>
+            <p class="mb-0">Tu usuario no tiene permisos para ver esta sección.</p>
+        </div>
+    </div>
+}
+
+@code {
+    string? userRole;
+    string? BranchCode;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!(user?.Identity?.IsAuthenticated ?? false))
+        {
+            Navigation.NavigateTo("/");
+            return;
+        }
+
+        userRole = user.FindFirst("RoleId")?.Value ?? user.Identity?.Name;
+        BranchCode = user.FindFirst("BranchCode")?.Value ?? user.Identity?.Name;
+
+        Console.WriteLine("userRole: " + userRole);
+        Console.WriteLine("BranchCode: " + BranchCode);
+    }
+}

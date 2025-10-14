@@ -1,5 +1,4 @@
-﻿using Molit_IN.Client.Services;
-using Molit_IN.Library.Rol;
+﻿using Molit_IN.Library.Rol;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
@@ -10,10 +9,12 @@ namespace Molit_IN.Client.Services
         public List<RolListCLS> lista;
         private readonly HttpClient _httpClient;
         private readonly TokenService _tokenService;
-        public event Func<Task> OnChange;
-        public event Func<int, Task> OnEdit;
-        public event Func<RolListCLS, Task> OnSearch;
-        public event Func<string, Task> OnSearch2;
+
+        public event Func<Task>? OnChange;
+        public event Func<int, Task>? OnEdit;
+        public event Func<RolListCLS, Task>? OnSearch;
+        public event Func<string, Task>? OnSearch2;
+
         public RoleServices(HttpClient httpClient, TokenService tokenService)
         {
             _httpClient = httpClient;
@@ -21,7 +22,6 @@ namespace Molit_IN.Client.Services
             _tokenService = tokenService;
         }
 
-        // Este método garantiza que _httpClient tenga siempre el Bearer antes de la petición.
         private async Task EnsureAuthorizationAsync()
         {
             var token = await _tokenService.GetTokenAsync();
@@ -36,107 +36,62 @@ namespace Molit_IN.Client.Services
         {
             await EnsureAuthorizationAsync();
             var response = await _httpClient.GetFromJsonAsync<List<RolListCLS>>("api/Rol");
-            if (response != null)
-            {
-                return response;
-            }
-            return lista;
+            return response ?? lista;
         }
 
-        public async Task<List<RolListCLS>> buscarRole(string oListRoleCLS)
+        public async Task<List<RolListCLS>> buscarRole(string texto)
         {
-            
             var lista = await listarRole();
-            lista = lista.Where(p =>
-                    (string.IsNullOrEmpty(oListRoleCLS) ||
-                     p.RoleName.ToUpper().Contains(oListRoleCLS.ToUpper()))
-
-
-            ).ToList();
-            return lista;
+            if (string.IsNullOrWhiteSpace(texto)) return lista;
+            var term = texto.ToUpperInvariant();
+            return lista.Where(p => (p?.RoleName ?? string.Empty).ToUpperInvariant().Contains(term)).ToList();
         }
 
         public async Task<RolFormAdd> recuperarRole(int id)
         {
-            try
-            {
-                await EnsureAuthorizationAsync();
-                var response = await _httpClient.GetFromJsonAsync<RolFormAdd>("api/Rol/" + id);
-                if (response != null)
-                {
-                    return response;
-                }
-                return new RolFormAdd();
-            }
-            catch (Exception ex)
-            {
-
-                throw;
-            }
-
+            await EnsureAuthorizationAsync();
+            return await _httpClient.GetFromJsonAsync<RolFormAdd>($"api/Rol/{id}") ?? new RolFormAdd();
         }
 
-        public async Task<bool> agregar(RolFormAdd oPostRoleCLS)
+        public async Task<bool> agregar(RolFormAdd model)
         {
             await EnsureAuthorizationAsync();
-            var response = await _httpClient.PostAsJsonAsync("api/Rol", oPostRoleCLS);
-            if (response.IsSuccessStatusCode)
-            {
-                notificarCambios();
-                return true;
-            }
-            return false;
-            // listacarrera.Add(oCarreraCLS);
-
-        }
-
-        public async Task<bool> editar(RolFormAdd oPostRoleCLS)
-        {
-            await EnsureAuthorizationAsync();
-            var response = await _httpClient.PutAsJsonAsync("api/Role", oPostRoleCLS);
-            if (response.IsSuccessStatusCode)
-            {
-                notificarCambios();
-                return true;
-            }
-            return false;
-            // listacarrera.Add(oCarreraCLS);
-
-        }
-
-        public async Task<bool> eliminar(int idusuario)
-        {
-            await EnsureAuthorizationAsync();
-            var response = await _httpClient.DeleteAsync("api/Rol/" + idusuario);
-            if (response.IsSuccessStatusCode)
-            {
-                notificarCambios();
-                return true;
-            }
+            var response = await _httpClient.PostAsJsonAsync("api/Rol", model);
+            if (response.IsSuccessStatusCode) { notificarCambios(); return true; }
             return false;
         }
 
+        public async Task<bool> editar(RolFormAdd model)
+        {
+            await EnsureAuthorizationAsync();
+            var response = await _httpClient.PutAsJsonAsync("api/Rol", model); //
+            if (response.IsSuccessStatusCode) { notificarCambios(); return true; }
+            return false;
+        }
+
+        public async Task<bool> eliminar(int id)
+        {
+            await EnsureAuthorizationAsync();
+            var response = await _httpClient.DeleteAsync($"api/Rol/{id}");
+            if (response.IsSuccessStatusCode) { notificarCambios(); return true; }
+            return false;
+        }
 
         public void notificarCambios()
         {
-            OnChange?.Invoke();
+            var h = OnChange; if (h is not null) _ = h.Invoke();
         }
-
-        public void notificarEdit(int idcarrera)
+        public void notificarEdit(int id)
         {
-            OnEdit?.Invoke(idcarrera);
+            var h = OnEdit; if (h is not null) _ = h.Invoke(id);
         }
-
-        public void notificarSearch(RolListCLS oListRoleCLS)
+        public void notificarSearch(RolListCLS r)
         {
-            OnSearch?.Invoke(oListRoleCLS);
+            var h = OnSearch; if (h is not null) _ = h.Invoke(r);
         }
-
-        public void notificarSearch2(string nombrerole)
+        public void notificarSearch2(string q)
         {
-            OnSearch2?.Invoke(nombrerole);
-
+            var h = OnSearch2; if (h is not null) _ = h.Invoke(q);
         }
-
     }
 }

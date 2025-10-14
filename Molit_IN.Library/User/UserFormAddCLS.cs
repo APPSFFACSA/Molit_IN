@@ -24,10 +24,10 @@ namespace Molit_IN.Library.User
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public UserType TypeUser { get; set; }
-        public int IdSupplier { get; set; }
+        public int IdBranch { get; set; }
         public int RoleId { get; set; }
-        public string? CardCode { get; set; }
-        public string? CardName { get; set; }
+        public string? BranchCode { get; set; }
+        public string? BranchName { get; set; }
         public enum UserType
         {
             Int,

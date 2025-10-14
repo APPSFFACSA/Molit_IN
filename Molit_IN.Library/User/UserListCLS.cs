@@ -18,11 +18,11 @@ namespace Molit_IN.Library.User
         [Column(TypeName = "varchar(150)")]
         public string FullName { get; set; }
         public UserType TypeUser { get; set; }
-        public int IdSupplier { get; set; }
+        public int IdBranch { get; set; }
         public string? nameSupplier { get; set; }
         public int  RoleId { get; set; }
-        public string? CardCode { get; set; }
-        public string? CardName { get; set; }
+        public string? BranchCode { get; set; }
+        public string? BranchName { get; set; }
         public enum UserType
         {
             Int,

@@ -1,0 +1,274 @@
+﻿@* @page "/usuarios/nuevo" *@
+@using Molit_IN.Library.User
+@using Molit_IN.Library.Menu
+@using Molit_IN.Library.Branch
+@using BlazorBootstrap
+@using Microsoft.AspNetCore.Components.Forms
+@implements IDisposable
+
+@inject UserServices oUserServices
+@inject RoleServices oRoleServices
+@inject Molit_IN.Client.Services.BranchServices oBranchServices
+
+@if (oUsuario is null || listaRole is null)
+{
+    <h3>Cargando...</h3>
+}
+else
+{
+    <EditForm EditContext="@editContext" @key="editContext" OnValidSubmit="@guardar">
+        <Toasts class="p-3" Messages="messages" AutoHide="true" Delay="3000" Placement="ToastsPlacement.TopRight" />
+
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mt-3">
+            <label>Id Usuario</label>
+            <NumberInput readonly class="form-control" @bind-Value="oUsuario.IdUser" />
+        </div>
+
+        <div class="mt-3">
+            <label>Ingrese Usuario</label>
+            <TextInput class="form-control" @bind-Value="oUsuario.UserName" />
+            <ValidationMessage For="(()=>oUsuario.UserName)" />
+        </div>
+
+        @* ==== Campo contraseña ==== *@
+        @if (oUsuario?.IdUser is 0 or null)
+        {
+            <!-- Alta -->
+            <div class="mt-3">
+                <label>Ingrese Contraseña</label>
+                <PasswordInput class="form-control" @bind-Value="passwordNueva" />
+                <ValidationMessage For="(()=>passwordNueva)" />
+            </div>
+
+            <div class="mt-3">
+                <label>Confirmar Contraseña</label>
+                <PasswordInput class="form-control" @bind-Value="passwordConfirm" />
+                <ValidationMessage For="(()=>passwordConfirm)" />
+            </div>
+        }
+        else
+        {
+            <!-- Edición -->
+            <div class="form-check form-switch mt-3">
+                <input class="form-check-input" type="checkbox" id="chgPwd" @bind="cambiarPassword">
+                <label class="form-check-label" for="chgPwd">Cambiar contraseña</label>
+            </div>
+
+            @if (cambiarPassword)
+            {
+                <div class="mt-3">
+                    <label>Nueva contraseña</label>
+                    <PasswordInput class="form-control" @bind-Value="passwordNueva" />
+                </div>
+                <div class="mt-3">
+                    <label>Confirmar contraseña</label>
+                    <PasswordInput class="form-control" @bind-Value="passwordConfirm" />
+                </div>
+            }
+        }
+
+        <div class="mt-3">
+            <label>Ingrese Nombre Completo</label>
+            <TextInput class="form-control" @bind-Value="oUsuario.FullName" />
+            <ValidationMessage For="(()=>oUsuario.FullName)" />
+        </div>
+
+        <div class="mt-3">
+            <label>Ingrese Email</label>
+            <TextInput class="form-control" @bind-Value="oUsuario.Email" />
+            <ValidationMessage For="(()=>oUsuario.Email)" />
+        </div>
+
+        <div class="mt-3">
+            <label>Seleccione Rol</label>
+            <InputSelect @bind-Value="oUsuario.RoleId" class="form-control">
+                <option value="0">--Seleccione--</option>
+                @foreach (var role in listaRole)
+                {
+                    <option value="@role.RoleId">@role.RoleName</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="(()=>oUsuario.RoleId)" />
+        </div>
+
+        <div class="mt-3">
+            <label>Seleccione Tipo de Usuario</label>
+            <InputSelect class="form-control" @bind-Value="oUsuario.TypeUser">
+                @foreach (var tipo in System.Enum.GetValues<UserFormAddCLS.UserType>())
+                {
+                    <option value="@tipo">@tipo</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="(()=>oUsuario.TypeUser)" />
+        </div>
+
+        <div class="mt-3">
+            <label>Seleccione Tienda / Sucursal</label>
+            <InputSelect @bind-Value="oUsuario.BranchCode" class="form-control" @onchange="OnBranchChanged">
+                <option value="">--Seleccione--</option>
+                @foreach (var branch in listaBranches)
+                {
+                    <option value="@branch.Code">@branch.Name</option>
+                }
+            </InputSelect>
+            @if (!string.IsNullOrWhiteSpace(oUsuario.BranchName))
+            {
+                <small class="text-muted">Seleccionado: @oUsuario.BranchName</small>
+            }
+        </div>
+
+        <div class="mt-3 d-flex gap-2">
+            <button class="btn btn-primary" type="submit">
+                @(oUsuario?.IdUser > 0 ? "Actualizar" : "Guardar")
+            </button>
+            <button class="btn btn-warning" @onclick="(()=>limpiar())" type="button">Limpiar</button>
+        </div>
+
+        <Spinner Class="me-3" Type="SpinnerType.Dots" Color="SpinnerColor.Success" Size="SpinnerSize.Large" Visible="@visible" />
+    </EditForm>
+}
+
+@code {
+    public UserFormAddCLS oUsuario;
+    public List<RolListCLS> listaRole;
+    public List<TiendasCLS> listaBranches = new();
+    private bool visible = false;
+    private EditContext editContext;
+
+    // === Contraseña / flags ===
+    private bool cambiarPassword = false;
+    private string? passwordNueva;
+    private string? passwordConfirm;
+
+    // Toasts
+    List<ToastMessage> messages = new();
+    private void ShowMessage(ToastType type, string titulo, string help, string mensaje)
+        => messages.Add(new ToastMessage { Type = type, Title = titulo, HelpText = help, Message = mensaje });
+
+    protected override async Task OnInitializedAsync()
+    {
+        oUserServices.OnEdit += recuperarUsuario;
+
+        // Catálogos
+        listaRole = await oRoleServices.listarRole();
+        var branches = await oBranchServices.GetTiendasAsync();
+        listaBranches = branches.OrderBy(b => b.Name).ToList();
+
+        oUsuario = new UserFormAddCLS();
+        editContext = new EditContext(oUsuario);
+    }
+
+    public void Dispose()
+    {
+        oUserServices.OnEdit -= recuperarUsuario;
+    }
+
+    private async Task guardar()
+    {
+        visible = true;
+
+        // Validación de contraseña si aplica
+        if ((oUsuario?.IdUser is 0 or null) || cambiarPassword)
+        {
+            if (string.IsNullOrWhiteSpace(passwordNueva) || string.IsNullOrWhiteSpace(passwordConfirm))
+            {
+                ShowMessage(ToastType.Warning, "Validación", "", "Debe ingresar y confirmar la contraseña.");
+                visible = false; return;
+            }
+            if (!string.Equals(passwordNueva, passwordConfirm))
+            {
+                ShowMessage(ToastType.Warning, "Validación", "", "Las contraseñas no coinciden. Verifique...");
+                visible = false; return;
+            }
+
+            oUsuario.Password = passwordNueva;
+        }
+        else
+        {
+            oUsuario.Password = null;
+        }
+
+        // Normalización Branch
+        if (string.IsNullOrWhiteSpace(oUsuario?.BranchCode))
+        {
+            oUsuario.BranchCode = "0";
+            oUsuario.BranchName = "na";
+        }
+        else if (string.IsNullOrWhiteSpace(oUsuario?.BranchName))
+        {
+            var br = listaBranches?.FirstOrDefault(x => (x.Code ?? string.Empty) == (oUsuario.BranchCode ?? string.Empty));
+            oUsuario.BranchName = br?.Name ?? "na";
+        }
+
+        bool ok = (oUsuario.IdUser > 0)
+            ? await oUserServices.actualizar(oUsuario)
+            : await oUserServices.agregar(oUsuario);
+
+        if (ok)
+        {
+            ShowMessage(ToastType.Success, "Usuario Molit", $"Molit - {DateTime.Now}",
+                oUsuario.IdUser > 0 ? "Registro actualizado correctamente" : "Registro agregado correctamente");
+
+            await ResetForm(); // ✅ limpiar al guardar o actualizar
+            oUserServices.notificarCambios();
+        }
+        else
+        {
+            ShowMessage(ToastType.Danger, "Usuario Molit", $"Molit:Error - {DateTime.Now}",
+                oUsuario.IdUser > 0 ? "No se pudo actualizar el registro" : "No se pudo guardar el registro");
+        }
+
+        visible = false;
+    }
+
+    private async Task ResetForm()
+    {
+        oUsuario = new UserFormAddCLS
+            {
+                BranchCode = "0",
+                BranchName = "na"
+            };
+        cambiarPassword = false;
+        passwordNueva = passwordConfirm = null;
+        editContext = new EditContext(oUsuario);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private Task limpiar() => ResetForm();
+
+    private async Task recuperarUsuario(int id)
+    {
+        var usuario = await oUserServices.recuperarUsuario(id) ?? new UserFormAddCLS();
+        oUsuario = usuario;
+
+        if (!string.IsNullOrWhiteSpace(oUsuario?.BranchCode) && string.IsNullOrWhiteSpace(oUsuario.BranchName))
+        {
+            var br = listaBranches?.FirstOrDefault(x => x.Code == oUsuario.BranchCode);
+            if (br is not null) oUsuario.BranchName = br.Name;
+        }
+
+        cambiarPassword = false;
+        passwordNueva = passwordConfirm = null;
+
+        editContext = new EditContext(oUsuario);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void OnBranchChanged(ChangeEventArgs e)
+    {
+        var code = e?.Value?.ToString();
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            oUsuario.BranchCode = "0";
+            oUsuario.BranchName = "na";
+            return;
+        }
+
+        oUsuario.BranchCode = code;
+        var br = listaBranches?.FirstOrDefault(x => (x.Code ?? string.Empty) == code);
+        oUsuario.BranchName = br?.Name ?? "na";
+    }
+}

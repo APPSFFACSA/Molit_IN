@@ -1,29 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<PlatformTarget>x64</PlatformTarget>
+	</PropertyGroup>
 
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.9" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.9" />
+		<PackageReference Include="QuestPDF" Version="2025.4.2" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.9" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
-	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.9" />
-	  <PackageReference Include="SapHana.DotNetCore.Data.Provider" Version="2.11.14" />
-	  <PackageReference Include="QuestPDF" Version="2025.4.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Molit_IN.Library\Molit_IN.Library.csproj" />
-	  <Reference Include="Sap.Data.Hana.Core.v2.1">
-		  <HintPath>..\..\..\..\..\..\..\..\Program Files\sap\hdbclient\dotnetcore\v2.1\Sap.Data.Hana.Core.v2.1.dll</HintPath>
-	  </Reference>
-  </ItemGroup>
-
+	<ItemGroup>
+		<ProjectReference Include="..\Molit_IN.Library\Molit_IN.Library.csproj" />
+		<!-- Usa el NOMBRE REAL del DLL que está en tu máquina -->
+		<Reference Include="Sap.Data.Hana.Core">
+			<!--<HintPath>C:\Program Files\SAP\hdbclient\dotnetcore\Sap.Data.Hana.Core.v2.1.dll</HintPath>-->
+			<HintPath>..\..\..\..\..\..\..\..\Program Files\sap\hdbclient\dotnetcore\v2.1\Sap.Data.Hana.Core.v2.1.dll</HintPath>
+			<Private>True</Private>
+		</Reference>
+	</ItemGroup>
 </Project>

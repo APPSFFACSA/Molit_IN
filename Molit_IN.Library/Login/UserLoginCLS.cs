@@ -13,9 +13,9 @@ namespace Molit_IN.Library.Login
         public int iduusario { get; set; }
         public string FullName { get; set; }
         public UserType TypeUser { get; set; }
-        public int IdSupplier { get; set; }
-        public string? CardCode { get; set; }
-        public string? CardName { get; set; }
+        public int IdBranch { get; set; }
+        public string? BranchCode { get; set; }
+        public string? BranchName { get; set; }
         public string? nameSupplier { get; set; }
         public int RoleId { get; set; }
 

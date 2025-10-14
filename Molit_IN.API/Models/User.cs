@@ -21,8 +21,8 @@ namespace Molit_IN.API.Models
         public string TypeUser { get; set; }
 
         //si el tipo es externo estos campos se activan en la creación del usuario.
-        public string? CardCode { get; set; }
-        public string? CardName { get; set; }
+        public string? BranchCode { get; set; }
+        public string? BranchName { get; set; }
         public int RoleId { get; set; }
         [Comment("Registro activo")]
         public bool IsActive { get; set; } = true;

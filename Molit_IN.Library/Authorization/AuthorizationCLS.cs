@@ -17,8 +17,8 @@ namespace Molit_IN.Library.Authorization
         [Column(TypeName = "nvarchar(max)")]
         public string? Comments { get; set; }
         public int IdSettlement { get; set; }
-        public  string? CardCode { get; set; }
-        public string? CardName { get; set; }
+        public  string? BranchCode { get; set; }
+        public string? BranchName { get; set; }
         public decimal Total { get; set; }
         public decimal TotalKM { get; set; }
     }

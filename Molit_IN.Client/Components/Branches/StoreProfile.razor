@@ -1,0 +1,220 @@
+﻿@* Client/Components/Branch/StoreProfile.razor (solo Bootstrap) *@
+@using Molit_IN.Library.Branch
+@inject Molit_IN.Client.Services.BranchServices BranchSvc
+@inject IJSRuntime JS
+
+@if (isLoading)
+{
+    <div class="card shadow-sm">
+        <div class="card-header d-flex align-items-center gap-2 placeholder-glow">
+            <span class="placeholder col-2 rounded-pill"></span>
+            <span class="placeholder col-6"></span>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 placeholder-glow">
+                <div class="col-12 col-md-6">
+                    <div class="mb-2">
+                        <div class="placeholder col-3 mb-1"></div>
+                        <div class="placeholder col-8"></div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="mb-2">
+                        <div class="placeholder col-4 mb-1"></div>
+                        <div class="placeholder col-7"></div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="mb-2">
+                        <div class="placeholder col-3 mb-1"></div>
+                        <div class="placeholder col-10"></div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="mb-2">
+                        <div class="placeholder col-5 mb-1"></div>
+                        <div class="placeholder col-8"></div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="mb-2">
+                        <div class="placeholder col-4 mb-1"></div>
+                        <div class="placeholder col-7"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else if (!string.IsNullOrWhiteSpace(error))
+{
+    <div class="alert alert-danger d-flex align-items-start gap-3" role="alert">
+        <div class="fs-4" aria-hidden="true">⚠️</div>
+        <div class="flex-grow-1">
+            <h6 class="mb-1">No se pudo cargar la tienda</h6>
+            <div class="small">@error</div>
+
+            @if (!string.IsNullOrWhiteSpace(BranchCode))
+            {
+                <div class="mt-3 d-flex flex-wrap gap-2">
+                    <button class="btn btn-danger btn-sm" @onclick="Reload" title="Reintentar">
+                        ↻ Reintentar
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" @onclick="CopyBranchCode" title="Copiar código">
+                        📋 Copiar código
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+}
+else if (tienda is null)
+{
+    <div class="alert alert-warning" role="alert">
+        <div class="d-flex align-items-start gap-3">
+            <div class="fs-4" aria-hidden="true">🗂️</div>
+            <div>
+                <h6 class="mb-1">Sin resultados</h6>
+                <p class="mb-3">No encontramos información para el código <strong>@BranchCode</strong>.</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-primary btn-sm" @onclick="Reload">↻ Volver a buscar</button>
+                    <button class="btn btn-outline-secondary btn-sm" @onclick="CopyBranchCode">📋 Copiar código</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-3 border bg-white d-grid place-items-center" style="width:40px;height:40px;">
+                    <span class="fs-5" aria-hidden="true">🏬</span>
+                </div>
+                <div>
+                    <div class="fw-bold">Tienda <span class="text-primary">#@tienda.Code</span></div>
+                    <small class="text-muted">Perfil de tienda</small>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-light btn-sm" title="Copiar dirección" @onclick="CopyAddress">
+                    📋 <span class="d-none d-sm-inline">Copiar dirección</span>
+                </button>
+               @*  <button class="btn btn-outline-primary btn-sm" title="Actualizar" @onclick="Reload">
+                    ↻ <span class="d-none d-sm-inline">Actualizar</span>
+                </button> *@
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <div class="mb-2">
+                        <div class="text-muted small">Código</div>
+                        <div class="fw-medium">@tienda.Code</div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <div class="mb-2">
+                        <div class="text-muted small">Nombre</div>
+                        <div class="fw-medium">@tienda.Name</div>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="mb-2">
+                        <div class="text-muted small">Dirección</div>
+                        <div class="fw-medium">@tienda.U_Direccion</div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <div class="mb-2">
+                        <div class="text-muted small">Departamento</div>
+                        <div class="mt-1">
+                            <span class="badge rounded-pill bg-light text-dark border">
+                                @(tienda?.U_Departamento ?? "—")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <div class="mb-2">
+                        <div class="text-muted small">Municipio</div>
+                        <div class="mt-1">
+                            <span class="badge rounded-pill bg-light text-dark border">
+                                @(tienda?.U_Municipio ?? "—")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <hr class="my-4" />
+
+            <div class="d-flex flex-wrap gap-2">
+                <span class="badge rounded-pill text-bg-light border">🏷️ @((tienda.Name ?? "—"))</span>
+                <span class="badge rounded-pill text-bg-light border">🧭 @((tienda.U_Municipio ?? "—"))</span>
+                <span class="badge rounded-pill text-bg-light border">📍 @((tienda.U_Departamento ?? "—"))</span>
+                
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string? BranchCode { get; set; }
+
+    private TiendasCLS? tienda;
+    private bool isLoading = true;
+    private string? error;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        error = null;
+        tienda = null;
+        isLoading = true;
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(BranchCode))
+            {
+                error = "No se recibió el código de tienda (BranchCode).";
+                return;
+            }
+
+            tienda = await BranchSvc.GetTiendaByCodeAsync(BranchCode);
+        }
+        catch (OperationCanceledException) { }
+        catch (HttpRequestException ex) { error = $"No se pudo obtener la tienda. Detalle: {ex.Message}"; }
+        catch (Exception ex) { error = $"Ocurrió un error inesperado. Detalle: {ex.Message}"; }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private Task Reload() => LoadAsync();
+
+    private async Task CopyAddress()
+    {
+        var text = $"{tienda?.U_Direccion ?? ""}, {tienda?.U_Municipio ?? ""}, {tienda?.U_Departamento ?? ""}".Trim().Trim(',');
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", text);
+    }
+
+    private async Task CopyBranchCode()
+    {
+        var text = BranchCode ?? tienda?.Code ?? "";
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", text);
+    }
+}

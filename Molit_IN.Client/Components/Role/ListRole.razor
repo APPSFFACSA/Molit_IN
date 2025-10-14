@@ -1,4 +1,5 @@
-﻿@inject RoleServices oRoleServices
+﻿@implements IDisposable
+@inject RoleServices oRoleServices
 @inject NavigationManager navigationManager
 
 <Toasts class="p-3" Messages="messages" AutoHide="true" Delay="3000" Placement="ToastsPlacement.TopRight" />
@@ -17,7 +18,6 @@ else
           PageSize="10"
           AllowFiltering="true"
           Responsive="true">
-
         <GridColumns>
             <GridColumn TItem="RolListCLS" HeaderText="Id" Filterable="false" HeaderTextAlignment="Alignment.Center" TextAlignment="Alignment.Center">
                 @context.RoleId
@@ -30,26 +30,17 @@ else
                 <Button @onclick="@(() => eliminar(@context.RoleId))" Color="ButtonColor.Danger" Size="ButtonSize.Small"><Icon Name="IconName.Trash2Fill" /></Button>
             </GridColumn>
         </GridColumns>
-
     </Grid>
-
 }
-@code {
-    public List<RolListCLS> lista; //= new List<UsuarioListCLS>();
-    private IEnumerable<RolListCLS> Roles = default!;
-    private Grid<RolListCLS> miGrid; // Asegúrate de que el tipo corresponda al componente
-    //esto es para las alertas.
-    List<ToastMessage> messages = new List<ToastMessage>();
-    private void ShowMessage(ToastType toastType, string titulo, string textosecundario, string mensaje) => messages.Add(CreateToastMessage(toastType, titulo, textosecundario, mensaje));
-    //fin para las alertas.
 
-    private ToastMessage CreateToastMessage(ToastType toastType, string titulo, string textosecundario, string mensaje) => new ToastMessage
-        {
-            Type = toastType,
-            Title = titulo,
-            HelpText = textosecundario,
-            Message = mensaje,
-        };
+@code {
+    public List<RolListCLS> lista;
+    private IEnumerable<RolListCLS> Roles = Enumerable.Empty<RolListCLS>();
+    private Grid<RolListCLS> miGrid;
+
+    List<ToastMessage> messages = new();
+    private void ShowMessage(ToastType toastType, string titulo, string textosecundario, string mensaje)
+        => messages.Add(new ToastMessage { Type = toastType, Title = titulo, HelpText = textosecundario, Message = mensaje });
 
     protected override async Task OnInitializedAsync()
     {
@@ -57,43 +48,42 @@ else
         oRoleServices.OnChange += refrezcarLista;
     }
 
-
-    private async Task<GridDataProviderResult<RolListCLS>> RolesDataProvider(GridDataProviderRequest<RolListCLS> request)
+    public void Dispose()
     {
-        //if (Usuarios is null) // pull employees only one time for client-side filtering, sorting, and paging
-        Roles = lista; // call a service or an API to pull the employees
-        return await Task.FromResult(request.ApplyTo(Roles));
+        oRoleServices.OnChange -= refrezcarLista;
+    }
 
+    private Task<GridDataProviderResult<RolListCLS>> RolesDataProvider(GridDataProviderRequest<RolListCLS> request)
+    {
+        Roles = lista ?? Enumerable.Empty<RolListCLS>();
+        return Task.FromResult(request.ApplyTo(Roles));
     }
 
     public async Task refrezcarLista()
     {
         lista = await oRoleServices.listarRole();
         Roles = lista;
-        // Llama al método de refresco del grid (si el grid lo expone)
-        await miGrid.RefreshDataAsync(); // o Refresh() según lo que ofrezca la librería
+        if (miGrid is not null) await miGrid.RefreshDataAsync();
         StateHasChanged();
     }
 
-
-    private async Task editar(int id)
+    private Task editar(int id)
     {
-        oRoleServices.notificarEdit(id);
-        await Task.CompletedTask;
+        oRoleServices.notificarEdit(id);   // ✅ evento via instancia compartida (Scoped)
+        return Task.CompletedTask;
     }
 
     private async Task eliminar(int id)
     {
         bool exito = await oRoleServices.eliminar(id);
-        if (exito == true)
+        if (exito)
         {
-            ShowMessage(ToastType.Success, "Rol Molit", $"Molit - {DateTime.Now}", $"Registro se ha eliminado correctamente! - {DateTime.Now}");
+            ShowMessage(ToastType.Success, "Rol Molit", $"Molit - {DateTime.Now}", $"Registro eliminado correctamente!");
+            await refrezcarLista();
         }
         else
         {
-            ShowMessage(ToastType.Success, "Rol Molit", $"Molit:Error - {DateTime.Now}", $"Error: No se ha podido eliminar el registro - {DateTime.Now}");
+            ShowMessage(ToastType.Danger, "Rol Molit", $"Molit:Error - {DateTime.Now}", $"No se pudo eliminar el registro");
         }
-        await Task.CompletedTask;
     }
-
 }

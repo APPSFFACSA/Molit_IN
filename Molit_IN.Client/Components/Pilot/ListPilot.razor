@@ -1,0 +1,105 @@
+﻿@inject PilotServices oPilotServices
+@inject IYourImageService servicio
+
+<Toasts class="p-3" Messages="messages" AutoHide="true" Delay="3000" Placement="ToastsPlacement.TopRight" />
+@if (lista is null)
+{
+    <h3>Cargando...</h3>
+}
+else
+{
+    <Grid TItem="PilotListCLS"
+          @ref="miGrid"
+          Class="table table-hover table-bordered table-striped table-sm"
+          DataProvider="PilotDataProvider"
+          AllowPaging="true"
+          PageSize="10"
+          AllowFiltering="true"
+          Responsive="true">
+
+        <GridColumns>
+            <GridColumn TItem="PilotListCLS" HeaderText="Id" Filterable="false" HeaderTextAlignment="Alignment.Center" TextAlignment="Alignment.Center">
+                @context.PilotId
+            </GridColumn>
+            <GridColumn TItem="PilotListCLS" HeaderText="Nombre Completo" PropertyName="FullName">
+                @context.FullName
+            </GridColumn>
+            <GridColumn TItem="PilotListCLS" HeaderText="Tipo de Licencia" PropertyName="Email" TextAlignment="Alignment.Center">
+                @context.LicenseType
+            </GridColumn>
+            <GridColumn TItem="PilotListCLS" HeaderText="Tipo" PropertyName="TypeUser">
+                @context.LicenseNumber
+            </GridColumn>
+            <GridColumn TItem="PilotListCLS" Filterable="false" HeaderText="Operaciones" HeaderTextAlignment="Alignment.Center" TextAlignment="Alignment.Center">
+                <Button @onclick="@(() => editar(@context.PilotId))" Color="ButtonColor.Warning" Size="ButtonSize.Small"><Icon Name="IconName.PencilFill" /></Button>
+                <Button @onclick="@(() => eliminar(@context.PilotId))" Color="ButtonColor.Danger" Size="ButtonSize.Small"><Icon Name="IconName.Trash2Fill" /></Button>
+            </GridColumn>
+        </GridColumns>
+
+
+    </Grid>
+}
+
+@code {
+    [Parameter]
+    public string branchcode { get; set; }
+    public List<PilotListCLS> lista; //= new List<UsuarioListCLS>();
+    private IEnumerable<PilotListCLS> Pilot = default!;
+    private Grid<PilotListCLS> miGrid; // Asegúrate de que el tipo corresponda al componente
+
+     //esto es para las alertas.
+    List<ToastMessage> messages = new List<ToastMessage>();
+    private void ShowMessage(ToastType toastType, string titulo, string textosecundario, string mensaje) => messages.Add(CreateToastMessage(toastType, titulo, textosecundario, mensaje));
+    //fin para las alertas.
+
+    private ToastMessage CreateToastMessage(ToastType toastType, string titulo, string textosecundario, string mensaje) => new ToastMessage
+        {
+            Type = toastType,
+            Title = titulo,
+            HelpText = textosecundario,
+            Message = mensaje,
+        };
+
+    protected override async Task OnInitializedAsync()
+    {
+        lista = await oPilotServices.listar(branchcode);
+        oPilotServices.OnChange += refrezcarLista;
+
+    }
+    public async Task refrezcarLista()
+    {
+        lista = await oPilotServices.listar(branchcode);
+        Pilot = lista;
+        // Llama al método de refresco del grid (si el grid lo expone)
+        await miGrid.RefreshDataAsync(); // o Refresh() según lo que ofrezca la librería
+        StateHasChanged();
+    }
+
+    private async Task<GridDataProviderResult<PilotListCLS>> PilotDataProvider(GridDataProviderRequest<PilotListCLS> request)
+    {
+        //if (Usuarios is null) // pull employees only one time for client-side filtering, sorting, and paging
+        Pilot = lista; // call a service or an API to pull the employees
+        return await Task.FromResult(request.ApplyTo(Pilot));
+
+    }
+
+    private async Task editar(int id)
+    {
+        oPilotServices.notificarEdit(id);
+        await Task.CompletedTask;
+    }
+
+    private async Task eliminar(int idusuario)
+    {
+        bool exito = await oPilotServices.eliminar(idusuario);
+        if (exito == true)
+        {
+            ShowMessage(ToastType.Success, "Piloto Molit", $"Molit - {DateTime.Now}", $"Registro se ha eliminado correctamente! - {DateTime.Now}");
+        }
+        else
+        {
+            ShowMessage(ToastType.Success, "Piloto Molit", $"Molit:Error - {DateTime.Now}", $"Error: No se ha podido eliminar el registro - {DateTime.Now}");
+        }
+        await Task.CompletedTask;
+    }
+}

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Molit_IN.API.Data;
 
@@ -11,9 +12,11 @@ using Molit_IN.API.Data;
 namespace Molit_IN.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251010154719_RenameUserCardToBranch")]
+    partial class RenameUserCardToBranch
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -68,66 +71,6 @@ namespace Molit_IN.API.Migrations
                     b.HasKey("MenuId");
 
                     b.ToTable("Menus");
-                });
-
-            modelBuilder.Entity("Molit_IN.API.Models.Pilots", b =>
-                {
-                    b.Property<int>("PilotId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PilotId"));
-
-                    b.Property<int>("Age")
-                        .HasColumnType("int");
-
-                    b.Property<string>("BranchCode")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasComment("Usuario que creo el registro");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2")
-                        .HasComment("Fecha y hora de creación del registro");
-
-                    b.Property<string>("FullName")
-                        .HasColumnType("nvarchar(254)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit")
-                        .HasComment("Registro activo");
-
-                    b.Property<string>("LicenseNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<byte[]>("LicensePhoto")
-                        .IsRequired()
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<string>("LicenseType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NamePhoto")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UpdatedBy")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)")
-                        .HasComment("Ultimo usuario que modificó el registro");
-
-                    b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime2")
-                        .HasComment("Ultima fecha y hora de actualización del registro");
-
-                    b.HasKey("PilotId");
-
-                    b.ToTable("Pilots");
                 });
 
             modelBuilder.Entity("Molit_IN.API.Models.Role", b =>

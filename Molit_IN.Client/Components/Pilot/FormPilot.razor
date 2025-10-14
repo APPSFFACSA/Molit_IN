@@ -1,0 +1,183 @@
+﻿@* @inject SupplierServices oSupplierServices *@
+@inject PilotServices oPilotServices
+@inject IYourImageService servicio
+
+
+@if(oPilot is null)
+{
+    <h3>Cargando...</h3>
+}
+else
+{
+    <EditForm Model="@oPilot" OnValidSubmit="@guardar">
+        <Toasts class="p-3" Messages="messages" AutoHide="true" Delay="3000" Placement="ToastsPlacement.TopRight" />
+
+        <DataAnnotationsValidator />
+        <div class="mt-3">
+            @* <span class="input-group-text" id="inputGroup-sizing-sm">Small</span> *@
+            <label>Id Piloto</label>
+            <NumberInput readonly class="form-control" @bind-Value="oPilot.PilotId" />
+        </div>
+@*         <div class="mt-3">
+            <label>Proveedor</label>
+            <TextInput class="form-control" @bind-Value="oPilot.CardCode" />
+            <ValidationMessage For="(()=>oPilot.CardCode)" />
+        </div> *@
+        <div class="mt-3">
+            <label>Nombre Completo</label>
+            <TextInput class="form-control" @bind-Value="oPilot.FullName" />
+            <ValidationMessage For="(()=>oPilot.FullName)" />
+        </div>
+
+        <div class="mt-3">
+            <label>Edad</label>
+            <NumberInput class="form-control" @bind-Value="oPilot.Age" />
+        </div>
+        <div class="mt-3">
+            <label>Seleccione Tipo De Licencia</label>
+            <InputSelect @bind-Value="oPilot.LicenseType" class="form-control">
+                <option value="0">--Seleccione--</option>
+                <option value="A">Tipo A</option>
+                <option value="B">Tipo B</option>
+                <option value="C">Tipo C</option>
+                <option value="M">Tipo M</option>
+                <option value="E">Tipo E</option>
+            </InputSelect>
+        </div>
+        <div class="mt-3">
+            <label>No. Licencia</label>
+            <TextInput class="form-control" @bind-Value="oPilot.LicenseNumber" />
+            <ValidationMessage For="(()=>oPilot.LicenseNumber)" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Foto de Licencia</label>
+            <InputFile OnChange="OnFilesUploading"
+            class="form-control"
+            max-file-size="15000000" />
+        </div>
+
+        @if (!string.IsNullOrEmpty(imagePreview))
+        {
+            <div class="mb-3">
+                <img src="@imagePreview"
+                width="200" height="200"
+                class="img-thumbnail" />
+            </div>
+        }
+
+
+        <div class="mt-3">
+            <button class="btn btn-primary" type="submit">Guardar</button>
+            <button class="btn btn-warning" @onclick="(()=>limpiar())" type="button">Limpiar</button>
+
+        </div>
+        <Spinner Class="me-3" Type="SpinnerType.Dots" Color="SpinnerColor.Success" Size="SpinnerSize.Large" Visible="@visible" />
+
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public string branchcode { get; set; }
+    private string? imagePreview;
+    public PilotFormAddCLS oPilot;
+    // Este GUID se usa para invalidar el <InputFile>
+    private Guid fileInputKey = Guid.NewGuid();
+    private bool visible = false;
+    //esto es para las alertas.
+    List<ToastMessage> messages = new List<ToastMessage>();
+    private void ShowMessage(ToastType toastType, string titulo, string textosecundario, string mensaje) => messages.Add(CreateToastMessage(toastType, titulo, textosecundario, mensaje));
+    //fin para las alertas.
+
+    private ToastMessage CreateToastMessage(ToastType toastType, string titulo, string textosecundario, string mensaje) => new ToastMessage
+    {
+        Type = toastType,
+        Title = titulo,
+        HelpText = textosecundario,
+        Message = mensaje,
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        //oSupplierFormAddCLS = await oSupplierServices.recuperarProveedor(cardcode);
+        //oPilot.CardCode = cardcode;
+        oPilotServices.OnEdit += recuperar;
+        oPilot = new PilotFormAddCLS();
+        StateHasChanged();
+        await Task.CompletedTask;
+    }
+
+    private async Task guardar()
+    {
+        visible = true;
+        oPilot.BranchCode = branchcode;
+        var respuesta = await oPilotServices.agregar(oPilot);
+        if (respuesta == true)
+        {
+            ShowMessage(ToastType.Success, "Piloto Molit", $"Molit - {DateTime.Now}", $"Registro agregado correctamente! - {DateTime.Now}");
+            ClearImage();
+            oPilot = new PilotFormAddCLS();
+        }
+        else
+        {
+            ShowMessage(ToastType.Success, "Piloto Molit", $"Molit:Error - {DateTime.Now}", $"Error: No se ha podido guardar el registro- {DateTime.Now}");
+        }
+        visible = false;
+        await Task.CompletedTask;
+
+    }
+
+    private async Task limpiar()
+    {
+        oPilot = new PilotFormAddCLS();
+        ClearImage();
+        await Task.CompletedTask;
+
+    }
+
+    private async Task recuperar(int id)
+    {
+        oPilot = await oPilotServices.recuperar(id);
+        var data = await oPilotServices.recuperar(oPilot.PilotId);
+        imagePreview = servicio.VisualizarImagen(data.NamePhoto, data.LicensePhoto);
+        StateHasChanged();
+        await Task.CompletedTask;
+
+    }
+
+    protected async Task OnFilesUploading(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file == null)
+            return;
+
+        using var ms = new MemoryStream();
+        await file.OpenReadStream(maxAllowedSize: 15000000)
+              .CopyToAsync(ms);
+        
+        // Asignar al modelo
+        oPilot.LicensePhoto = ms.ToArray();
+        oPilot.NamePhoto = file.Name;
+        
+        // Generar Data URI para previsualizar
+        imagePreview = servicio.VisualizarImagen(oPilot.NamePhoto, oPilot.LicensePhoto);
+        
+        StateHasChanged();
+    }
+
+    private void ClearImage()
+    {
+        // Limpio los datos del modelo
+        oPilot.LicensePhoto = Array.Empty<byte>();
+        oPilot.NamePhoto = null;
+
+        // Oculto la vista previa
+        imagePreview = null;
+
+        // Genero un nuevo key para que <InputFile> se re-renderice “vacío”
+        fileInputKey = Guid.NewGuid();
+
+        StateHasChanged();
+    }
+
+}

@@ -1,32 +1,27 @@
-﻿@page "/user"
-@using Molit_IN.Client.Components.User
+﻿@page "/pilot"
+@using Molit_IN.Client.Components.Pilot
 @using System.Security.Claims
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager Navigation
 
-@if (isLoading)
+@if (userRole == "1" || userRole == "2")
 {
-    <h3>Cargando...</h3>
-}
-else if (userRole == "1")
-{
-    <h3>Usuarios</h3>
+    <h3>Pilotos</h3>
     <div class="container-fluid">
         <div class="row gy-3">
             <!-- Columna para el formulario: en pantallas pequeñas ocupa 12 columnas, en md ocupa 4 -->
             <div class="col-12 col-md-4">
                 <div class="card">
                     <div class="card-body">
-                        <FormUser />
+                        <FormPilot branchcode="@BranchCode" />
                     </div>
                 </div>
             </div>
-
             <!-- Columna para la lista: en pantallas pequeñas ocupa 12 columnas, en md ocupa 8 -->
             <div class="col-12 col-md-8">
                 <div class="card">
                     <div class="card-body">
-                        <ListUser />
+                        <ListPilot branchcode="@BranchCode" />
                     </div>
                 </div>
             </div>
@@ -39,22 +34,24 @@ else
 }
 
 @code {
-    string? userRole;
-    bool isLoading = true;
+    string userRole;
+    // string parametro;
+    string BranchCode;
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
-        if (!(user?.Identity?.IsAuthenticated ?? false))
+        if (!user.Identity.IsAuthenticated)
         {
+            // Redirige al login si no está autenticado
             Navigation.NavigateTo("/");
-            return;
         }
+        userRole = user.FindFirst("RoleId")?.Value ?? user.Identity.Name;
+        BranchCode = user.FindFirst("BranchCode")?.Value ?? user.Identity.Name;
 
-        userRole = user.FindFirst("RoleId")?.Value ?? user.Identity?.Name;
-        Console.WriteLine($"userRole: {userRole}");
-        isLoading = false;
+		Console.WriteLine("RoleId: " + userRole);
+		Console.WriteLine("BranchCode: " + BranchCode);
     }
 }

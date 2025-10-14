@@ -57,9 +57,9 @@ namespace Molit_IN.API.Controllers
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
                 };
 
-                if (!string.IsNullOrWhiteSpace(usuario.CardCode))
+                if (!string.IsNullOrWhiteSpace(usuario.BranchCode))
                 {
-                    claims.Add(new Claim("CardCode", usuario.CardCode));
+                    claims.Add(new Claim("BranchCode", usuario.BranchCode));
                 }
 
                 var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes("BO7YThbqh51BmXcAyReF806mMjHgMDik"));
