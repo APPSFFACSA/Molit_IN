@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Molit_IN.API.Data;
 
@@ -11,9 +12,11 @@ using Molit_IN.API.Data;
 namespace Molit_IN.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251015204327_AddCopilotsTable")]
+    partial class AddCopilotsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -70,8 +73,8 @@ namespace Molit_IN.API.Migrations
                     b.Property<string>("NamePhoto")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("PilotId")
-                        .HasColumnType("int")
+                    b.Property<string>("PilotId")
+                        .HasColumnType("nvarchar(max)")
                         .HasComment("Piloto al que esta asignado el Auxiliar");
 
                     b.Property<string>("UpdatedBy")

@@ -95,10 +95,10 @@ namespace Molit_IN.Client.Services
 
         }
 
-        public async Task<bool> eliminar(int idusuario)
+        public async Task<bool> eliminar(int idpilot)
         {
             await EnsureAuthorizationAsync();
-            var response = await _httpClient.DeleteAsync("api/Rol/" + idusuario);
+            var response = await _httpClient.DeleteAsync($"api/Pilot/{idpilot}");
             if (response.IsSuccessStatusCode)
             {
                 notificarCambios();

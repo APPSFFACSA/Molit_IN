@@ -35,8 +35,8 @@ namespace Molit.API.Controllers
                                  Age = pilot.Age,
                                  LicenseType = pilot.LicenseType,
                                  LicenseNumber = pilot.LicenseNumber,
-                                 LicensePhoto = pilot.LicensePhoto,
-                                 NamePhoto = pilot.NamePhoto
+                                 //LicensePhoto = pilot.LicensePhoto,
+                                 //NamePhoto = pilot.NamePhoto
 
                              }).ToList();
                 return Ok(lista);
@@ -64,8 +64,8 @@ namespace Molit.API.Controllers
                                  Age = pilot.Age,
                                  LicenseType = pilot.LicenseType,
                                  LicenseNumber = pilot.LicenseNumber,
-                                 LicensePhoto = pilot.LicensePhoto,
-                                 NamePhoto = pilot.NamePhoto
+                                 //LicensePhoto = pilot.LicensePhoto,
+                                 //NamePhoto = pilot.NamePhoto
 
                              }).ToList();
                 return Ok(lista);

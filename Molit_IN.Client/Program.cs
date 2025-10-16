@@ -47,6 +47,7 @@ builder.Services.AddHttpClient<AuthorizationLevelTemplateServices>(c => c.BaseAd
 builder.Services.AddScoped<UserServices>();
 builder.Services.AddScoped<RoleServices>();
 builder.Services.AddScoped<PilotServices>();
+builder.Services.AddScoped<CopilotServices>();
 builder.Services.AddScoped<IYourImageService, YourImageService>();
 
 // === Otros servicios locales === 
