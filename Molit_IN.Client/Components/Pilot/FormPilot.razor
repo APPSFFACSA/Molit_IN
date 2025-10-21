@@ -53,7 +53,13 @@ else
         @if (!string.IsNullOrEmpty(imagePreview))
         {
             <div class="mb-3">
-                <img src="@imagePreview" width="200" height="200" class="img-thumbnail" />
+                <img src="@imagePreview"
+                     width="200" height="200"
+                     class="img-thumbnail"
+                     style="cursor: zoom-in;"
+                     @onclick="OpenImageDialog"
+                     alt="Vista previa de la licencia" />
+                <div class="form-text">Haz clic para ampliar</div>
             </div>
         }
 
@@ -66,6 +72,50 @@ else
     </EditForm>
 }
 
+@* /* Dialog / Modal de imagen ampliada */ *@
+@if (showImageDialog && !string.IsNullOrEmpty(imagePreview))
+{
+    <div class="image-dialog-backdrop" @onclick="BackdropClick" tabindex="0" @onkeydown="HandleKeyDown" autofocus>
+        <div class="image-dialog" @onclick:stopPropagation>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="m-0">Foto de licencia</h5>
+                <button type="button" class="btn-close" aria-label="Cerrar" @onclick="CloseImageDialog"></button>
+            </div>
+
+            <div class="text-center">
+                <img src="@imagePreview"
+                     class="img-fluid rounded border"
+                     style="max-height: 80vh;"
+                     alt="Imagen ampliada de la licencia" />
+            </div>
+
+            <div class="text-end mt-3">
+                <button type="button" class="btn btn-secondary" @onclick="CloseImageDialog">Cerrar</button>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .image-dialog-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1050;
+    }
+
+    .image-dialog {
+        width: min(90vw, 900px);
+        background: #fff;
+        border-radius: .75rem;
+        padding: 1rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+</style>
+
 @code {
     [Parameter] public string branchcode { get; set; }
 
@@ -74,9 +124,11 @@ else
 
     private string? imagePreview;
     public PilotFormAddCLS oPilot;
-    // Este GUID se usa para invalidar el <InputFile>
     private Guid fileInputKey = Guid.NewGuid();
     private bool visible = false;
+
+    // Estado del dialog
+    private bool showImageDialog = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -106,7 +158,7 @@ else
                     });
 
                 ClearImage();
-            oPilot = new PilotFormAddCLS();
+                oPilot = new PilotFormAddCLS();
             }
             else
             {
@@ -145,7 +197,7 @@ else
         var file = e.File;
         if (file == null) return;
 
-        // Validación opcional de tamaño antes de leer
+        // Límite 15MB
         if (file.Size > 15_000_000)
         {
             await OnToast.InvokeAsync(new ToastMessage
@@ -172,7 +224,31 @@ else
         oPilot.LicensePhoto = Array.Empty<byte>();
         oPilot.NamePhoto = null;
         imagePreview = null;
+        showImageDialog = false;
         fileInputKey = Guid.NewGuid();
         StateHasChanged();
+    }
+
+    // --- Manejo de dialog (abrir/cerrar, click fuera, ESC) ---
+    private void OpenImageDialog()
+    {
+        if (!string.IsNullOrEmpty(imagePreview))
+            showImageDialog = true;
+    }
+
+    private void CloseImageDialog()
+    {
+        showImageDialog = false;
+    }
+
+    private void BackdropClick(MouseEventArgs _)
+    {
+        CloseImageDialog();
+    }
+
+    private void HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+            CloseImageDialog();
     }
 }

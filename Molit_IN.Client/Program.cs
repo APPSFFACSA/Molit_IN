@@ -7,6 +7,7 @@ using Molit_IN.Client.Provider;   // Authentication (tu AuthStateProvider)
 using Molit_IN.Client.Services;
 using BlazorBootstrap;
 using CurrieTechnologies.Razor.SweetAlert2;
+using Molit_IN.Client.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -48,7 +49,8 @@ builder.Services.AddScoped<UserServices>();
 builder.Services.AddScoped<RoleServices>();
 builder.Services.AddScoped<PilotServices>();
 builder.Services.AddScoped<CopilotServices>();
-builder.Services.AddScoped<IYourImageService, YourImageService>();
+builder.Services.AddScoped<IYourImageService, YourImageService>(); 
+builder.Services.AddScoped<VehicleTypeServices>();
 
 // === Otros servicios locales === 
 builder.Services.AddScoped<LoginServices>();

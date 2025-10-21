@@ -15,6 +15,7 @@ public class ApplicationDbContext : DbContext
         public DbSet<Role> Roles => Set<Role>();
         public DbSet<Pilots> Pilots => Set<Pilots>(); 
         public DbSet<Copilots> Copilots => Set<Copilots>();
+        public DbSet<VehicleType> VehicleType => Set<VehicleType>();
     }
 
 }
