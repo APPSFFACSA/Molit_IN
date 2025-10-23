@@ -175,14 +175,33 @@ namespace Molit.API.Controllers
         }
 
         // POST: crear/actualizar (mixto)
+        // POST: crear/actualizar (mixto)
         [HttpPost]
         public ActionResult Post([FromBody] CopilotFormAddCLS oCopilotFormAddCLS)
         {
             try
             {
+                // ---- VALIDACIÓN: Máximo 2 copilotos por piloto (activos) ----
+                // Nota: PilotId = 0 significa "no asignado"; solo validamos cuando hay un piloto seleccionado.
+                if (oCopilotFormAddCLS.PilotId > 0)
+                {
+                    // Conteo de copilotos activos para ese piloto, excluyendo el actual si es actualización
+                    int countActivos = _bd.Copilots.Count(c =>
+                        c.IsActive == true
+                        && c.PilotId == oCopilotFormAddCLS.PilotId
+                        && c.CopilotsId != oCopilotFormAddCLS.CopilotsId
+                    );
+
+                    if (countActivos >= 2)
+                    {
+                        return BadRequest("El piloto seleccionado ya tiene 2 Auxiliares asignados. No se puede agregar un tercero.");
+                    }
+                }
+                // ----------------------------------------------------------------
+
                 if (oCopilotFormAddCLS.CopilotsId == 0)
                 {
-                    using (TransactionScope transaccion = new TransactionScope())
+                    using (TransactionScope transaccion = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                     {
                         var oCopilot = new Copilots
                         {
@@ -195,7 +214,6 @@ namespace Molit.API.Controllers
                             LicenseNumber = oCopilotFormAddCLS.LicenseNumber,
                             LicensePhoto = oCopilotFormAddCLS.LicensePhoto,
                             NamePhoto = oCopilotFormAddCLS.NamePhoto,
-
                             IsActive = true,
                             CreatedBy = oCopilotFormAddCLS.CreatedBy,
                             CreatedDate = oCopilotFormAddCLS.CreatedDate == default ? DateTime.Now : oCopilotFormAddCLS.CreatedDate,
@@ -226,7 +244,7 @@ namespace Molit.API.Controllers
                     oCopilot.LicensePhoto = oCopilotFormAddCLS.LicensePhoto;
                     oCopilot.NamePhoto = oCopilotFormAddCLS.NamePhoto;
 
-                    // Mantiene/actualiza estado
+                    // Mantiene/actualiza estado (opcional: podrías no permitir cambiar IsActive desde el cliente)
                     oCopilot.IsActive = oCopilotFormAddCLS.IsActive;
                     oCopilot.UpdatedBy = string.IsNullOrWhiteSpace(oCopilotFormAddCLS.UpdatedBy) ? oCopilot.UpdatedBy : oCopilotFormAddCLS.UpdatedBy;
                     oCopilot.UpdatedDate = DateTime.Now;
@@ -240,5 +258,6 @@ namespace Molit.API.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
     }
 }

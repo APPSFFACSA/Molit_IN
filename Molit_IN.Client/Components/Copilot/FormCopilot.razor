@@ -188,10 +188,10 @@ else
         {
             oCopilot.BranchCode = branchcode;
 
-            // Usamos POST (agregar) tanto para crear como para actualizar (CopilotController usa POST mixto)
-            var ok = await oCopilotServices.agregar(oCopilot);
+            // Usa el nuevo ApiResult (tu servicio POST mixto sirve para crear/actualizar)
+            var result = await oCopilotServices.agregar(oCopilot);
 
-            if (ok)
+            if (result.Ok)
             {
                 await OnToast.InvokeAsync(new ToastMessage
                     {
@@ -208,10 +208,12 @@ else
             {
                 await OnToast.InvokeAsync(new ToastMessage
                     {
-                        Type = ToastType.Danger,
-                        Title = "Copiloto Molit",
-                        HelpText = $"Molit:Error - {DateTime.Now}",
-                        Message = "Error: No se ha podido guardar el registro"
+                        Type = ToastType.Warning, // Warning para reglas de negocio
+                        Title = "No se pudo guardar",
+                        HelpText = $"Molit:Validación - {DateTime.Now}",
+                        Message = string.IsNullOrWhiteSpace(result.Message)
+                                 ? "El piloto seleccionado ya no puede recibir más Auxiliares."
+                                 : result.Message
                     });
             }
         }

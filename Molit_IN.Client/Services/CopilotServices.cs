@@ -91,30 +91,37 @@ namespace Molit_IN.Client.Services
         }
 
         // Crear
-        public async Task<bool> agregar(CopilotFormAddCLS dto)
+        public record ApiResult(bool Ok, string? Message);
+
+        public async Task<ApiResult> agregar(CopilotFormAddCLS dto)
         {
             await EnsureAuthorizationAsync();
             var response = await _httpClient.PostAsJsonAsync("api/Copilot", dto);
+            var msg = await response.Content.ReadAsStringAsync();
+
             if (response.IsSuccessStatusCode)
             {
                 notificarCambios();
-                return true;
+                return new ApiResult(true, msg);
             }
-            return false;
+            return new ApiResult(false, string.IsNullOrWhiteSpace(msg) ? "No se ha podido guardar el registro." : msg);
         }
 
-        // Editar (el controlador no expone PUT; usa POST mixto)
-        public async Task<bool> editar(CopilotFormAddCLS dto)
+        // (si usas editar separado)
+        public async Task<ApiResult> editar(CopilotFormAddCLS dto)
         {
             await EnsureAuthorizationAsync();
             var response = await _httpClient.PostAsJsonAsync("api/Copilot", dto);
+            var msg = await response.Content.ReadAsStringAsync();
+
             if (response.IsSuccessStatusCode)
             {
                 notificarCambios();
-                return true;
+                return new ApiResult(true, msg);
             }
-            return false;
+            return new ApiResult(false, string.IsNullOrWhiteSpace(msg) ? "No se ha podido actualizar el registro." : msg);
         }
+
 
         // Eliminar lógico
         public async Task<bool> eliminar(int idcopilot)

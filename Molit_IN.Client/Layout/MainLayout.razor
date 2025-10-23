@@ -1,18 +1,40 @@
 ﻿@using Molit_IN.Client.Provider
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
 @inherits LayoutComponentBase
 @inject NavigationManager navigationManager
 @inject IJSRuntime JS
-@inject AuthenticationStateProvider AuthStateProvider
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <div class="page">
-    <!-- Importante: quitar el div.sidebar exterior -->
     <NavMenu />
 
     <main>
-        <div class="top-row px-4">
-            <Button @onclick="@(() => LogoutAsync())" Color="ButtonColor.Danger" Size="ButtonSize.Small">
-                <Icon Name="IconName.DoorClosed" />
-            </Button>
+        <div class="top-row px-4 d-flex justify-content-end align-items-center">
+            <div class="dropdown">
+                <button class="btn p-0 border-0 bg-transparent" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="@userDisplay">
+                    <div class="user-avatar">@userInitial</div>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <span class="dropdown-item-text d-flex align-items-center text-muted">
+                            <span class="me-2">
+                                <i class="bi bi-person"></i>
+                            </span>
+                            @userDisplay
+                        </span>
+                    </li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li>
+                        <button class="dropdown-item d-flex align-items-center" @onclick="LogoutAsync">
+                            <span class="me-2">
+                                <i class="bi bi-door-closed"></i>
+                            </span>
+                            Cerrar sesión
+                        </button>
+                    </li>
+                </ul>
+            </div>
         </div>
 
         <article class="content px-4">
@@ -24,15 +46,30 @@
 </div>
 
 @code {
+    private string userDisplay = "Usuario";
+    private string userInitial = "U";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = await  AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var u = auth.User;
+
+        userDisplay =
+            u.FindFirst("FullName")?.Value ?? u.Identity.Name
+            ?? "Usuario";
+
+        var trimmed = (userDisplay ?? string.Empty).Trim();
+        var ch = trimmed.FirstOrDefault(c => char.IsLetterOrDigit(c));
+        userInitial = ch == default(char) ? "U" : char.ToUpperInvariant(ch).ToString();
+    }
+
     private async Task LogoutAsync()
     {
         await JS.InvokeVoidAsync("localStorage.removeItem", "authToken");
 
-        if (AuthStateProvider is Authentication customAuth)
-        {
+        if (AuthenticationStateProvider is Authentication customAuth)
             await customAuth.CerrarSesion();
-        }
 
-        navigationManager.NavigateTo("/", true);
+        navigationManager.NavigateTo("/", forceLoad: true);
     }
 }
